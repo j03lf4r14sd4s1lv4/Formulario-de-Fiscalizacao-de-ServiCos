@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulário de Fiscalização</title>
+
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0a0a0a;
+            padding: 30px;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #111;
+            padding: 30px;
+            border-radius: 18px;
+            border: 2px solid #b30000;
+        }
+
+        h2 {
+            text-align: center;
+            color: #ff1a1a;
+        }
+
+        h3 {
+            color: #ff4d4d;
+            margin-top: 25px;
+            border-bottom: 1px solid #ff1a1a;
+            padding-bottom: 5px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 12px;
+            display: block;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 9px;
+            border-radius: 10px;
+            border: 1px solid #444;
+            background: #1c1c1c;
+            color: #fff;
+        }
+
+        .checklist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1a1a1a;
+            padding: 10px 12px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #333;
+        }
+
+        .checklist-texto {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
+        }
+
+        .tooltip {
+            position: relative;
+            cursor: pointer;
+            font-weight: bold;
+            color: #ff4d4d;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 260px;
+            background-color: #222;
+            color: #fff;
+            text-align: left;
+            padding: 10px;
+            border-radius: 10px;
+            position: absolute;
+            z-index: 10;
+            bottom: 140%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+        }
+
+        .checklist-item select {
+            width: 140px;
+        }
+
+        button {
+            margin-top: 25px;
+            width: 100%;
+            padding: 14px;
+            font-size: 17px;
+            font-weight: bold;
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            color: #fff;
+            background: linear-gradient(135deg, #b30000, #ff1a1a);
+        }
+
+        .btn-download {
+            background: #444;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Formulário de Fiscalização de Serviços</h2>
+
+    <form id="formFiscalizacao">
+
+        <h3>1. Identificação</h3>
+
+        <label>Nome do Técnico</label>
+        <input type="text" id="tecnico" required>
+
+        <label>CPF do Técnico</label>
+        <input type="text" id="cpf" required>
+
+        <label>Nome do Fiscal</label>
+        <input type="text" id="fiscal" required>
+
+        <label>Data da Fiscalização</label>
+        <input type="date" id="data" required>
+
+        <label>Número da OS / Serviço</label>
+        <input type="text" id="os" required>
+
+        <h3>2. Check-list Técnico (15 Itens)</h3>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                1. Uso correto de EPI
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Verifique se o técnico está utilizando corretamente todos os Equipamentos de Proteção Individual.</span>
+                </span>
+            </div>
+            <select id="item1"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                2. Uso correto de EPC
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Confirme se os Equipamentos de Proteção Coletiva estão sendo utilizados corretamente.</span>
+                </span>
+            </div>
+            <select id="item2"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                3. Organização do veículo
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Avalie se o veículo está organizado e sem objetos soltos.</span>
+                </span>
+            </div>
+            <select id="item3"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                4. Limpeza do veículo
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Verifique se o veículo está limpo interna e externamente.</span>
+                </span>
+            </div>
+            <select id="item4"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                5. Ferramental completo
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Confirme se todas as ferramentas necessárias estão disponíveis.</span>
+                </span>
+            </div>
+            <select id="item5"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                6. Ferramental organizado
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Verifique se as ferramentas estão guardadas corretamente.</span>
+                </span>
+            </div>
+            <select id="item6"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                7. Instalação limpa
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Avalie se o local foi deixado limpo após o serviço.</span>
+                </span>
+            </div>
+            <select id="item7"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                8. Instalação segura
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Confirme se a instalação segue todas as normas de segurança.</span>
+                </span>
+            </div>
+            <select id="item8"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                9. Equipamentos bem fixados
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Verifique se os equipamentos estão firmes e sem risco de queda.</span>
+                </span>
+            </div>
+            <select id="item9"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                10. Cabo organizado
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Avalie se os cabos estão organizados e sem excesso visível.</span>
+                </span>
+            </div>
+            <select id="item10"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                11. Atendimento adequado ao cliente
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Verifique se o técnico manteve postura profissional e cordial.</span>
+                </span>
+            </div>
+            <select id="item11"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                12. Testes realizados corretamente
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Confirme se todos os testes necessários foram realizados.</span>
+                </span>
+            </div>
+            <select id="item12"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                13. Identificação correta dos cabos
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Verifique se os cabos foram identificados corretamente conforme padrão.</span>
+                </span>
+            </div>
+            <select id="item13"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                14. Uso correto de materiais
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Avalie se os materiais utilizados estão dentro do padrão técnico.</span>
+                </span>
+            </div>
+            <select id="item14"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <div class="checklist-item">
+            <div class="checklist-texto">
+                15. Finalização adequada do serviço
+                <span class="tooltip">❓
+                    <span class="tooltip-text">Confirme se o serviço foi finalizado corretamente e informado ao cliente.</span>
+                </span>
+            </div>
+            <select id="item15"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+        </div>
+
+        <h3>3. Avaliação Geral</h3>
+
+        <label>Houve atraso?</label>
+        <select id="atraso"><option value="">Neutro</option><option>Não</option><option>Sim</option></select>
+
+        <label>Houve falta injustificada?</label>
+        <select id="falta"><option value="">Neutro</option><option>Não</option><option>Sim</option></select>
+
+        <label>Produção mínima cumprida?</label>
+        <select id="producao"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+
+        <label>Veículo em bom estado?</label>
+        <select id="veiculo"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+
+        <label>Ferramental completo?</label>
+        <select id="ferramentas"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
+
+        <h3>4. Observações</h3>
+        <textarea id="observacoes" placeholder="Descreva qualquer observação relevante..."></textarea>
+
+        <h3>5. Confirmação</h3>
+        <label><input type="checkbox" id="confirmacao" required> Confirmo que as informações acima são verdadeiras.</label>
+
+        <button type="button" onclick="gerarRelatorioPDF()">Baixar Relatório (PDF)</button>
+
+    </form>
+</div>
+
+<script>
+    const { jsPDF } = window.jspdf;
+
+    function gerarRelatorioPDF() {
+        const doc = new jsPDF();
+        let y = 15;
+        const linha = 7;
+
+        function escrever(texto) {
+            doc.text(texto, 15, y);
+            y += linha;
+        }
+
+        function escreverTitulo(texto) {
+            doc.setFontSize(14);
+            doc.text(texto, 15, y);
+            y += linha + 3;
+            doc.setFontSize(11);
+        }
+
+        const tecnico = document.getElementById("tecnico").value;
+        const cpf = document.getElementById("cpf").value;
+        const fiscal = document.getElementById("fiscal").value;
+        const data = document.getElementById("data").value;
+        const os = document.getElementById("os").value;
+
+        escreverTitulo("RELATÓRIO DE FISCALIZAÇÃO DE SERVIÇOS");
+
+        escrever(`Técnico: ${tecnico}`);
+        escrever(`CPF: ${cpf}`);
+        escrever(`Fiscal: ${fiscal}`);
+        escrever(`Data: ${data}`);
+        escrever(`OS / Serviço: ${os}`);
+
+        y += 5;
+        escreverTitulo("CHECK-LIST TÉCNICO");
+
+        const perguntas = [
+            "1. Uso correto de EPI",
+            "2. Uso correto de EPC",
+            "3. Organização do veículo",
+            "4. Limpeza do veículo",
+            "5. Ferramental completo",
+            "6. Ferramental organizado",
+            "7. Instalação limpa",
+            "8. Instalação segura",
+            "9. Equipamentos bem fixados",
+            "10. Cabo organizado",
+            "11. Atendimento adequado",
+            "12. Testes realizados",
+            "13. Identificação dos cabos",
+            "14. Uso correto de materiais",
+            "15. Finalização do serviço"
+        ];
+
+        perguntas.forEach((texto, index) => {
+            const valor = document.getElementById(`item${index + 1}`).value || "Neutro";
+            escrever(`${texto}: ${valor}`);
+        });
+
+        y += 5;
+        escreverTitulo("AVALIAÇÃO GERAL");
+
+        escrever(`Houve atraso?: ${document.getElementById("atraso").value || "Neutro"}`);
+        escrever(`Houve falta injustificada?: ${document.getElementById("falta").value || "Neutro"}`);
+        escrever(`Produção mínima cumprida?: ${document.getElementById("producao").value || "Neutro"}`);
+        escrever(`Veículo em bom estado?: ${document.getElementById("veiculo").value || "Neutro"}`);
+        escrever(`Ferramental completo?: ${document.getElementById("ferramentas").value || "Neutro"}`);
+
+        y += 5;
+        escreverTitulo("OBSERVAÇÕES");
+
+        const observacoes = document.getElementById("observacoes").value || "Nenhuma observação registrada.";
+        const linhasObs = doc.splitTextToSize(observacoes, 170);
+        doc.text(linhasObs, 15, y);
+        y += linhasObs.length * linha + 5;
+
+        escreverTitulo("CONFIRMAÇÃO");
+
+        escrever("Declaro que as informações acima são verdadeiras.");
+        escrever("Assinatura do Fiscal: ___________________________");
+        escrever("Assinatura do Técnico: _________________________");
+        escrever("Data: ____/____/________");
+
+        const nomeArquivo = `relatorio_fiscalizacao_${tecnico || "tecnico"}_${data || "data"}.pdf`;
+        doc.save(nomeArquivo);
+    }
+</script>
+
+</body>
+</html>
