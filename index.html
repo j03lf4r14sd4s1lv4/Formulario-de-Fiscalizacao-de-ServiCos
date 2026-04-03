@@ -1,417 +1,1048 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Formulário de Fiscalização</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instalação Fibra PRO</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --red:      #E50012;
+  --red-dark: #8C000B;
+  --red-glow: rgba(229,0,18,0.13);
+  --bg:       #030303;
+  --s1:       #0A0A0A;
+  --s2:       #111111;
+  --s3:       #181818;
+  --border:   #202020;
+  --border2:  #2C2C2C;
+  --text:     #ECECEC;
+  --dim:      #666;
+  --muted:    #333;
+  --mono:     'Roboto Mono', monospace;
+  --display:  'Barlow Condensed', sans-serif;
+  --body:     'Barlow', sans-serif;
+  --radius:   10px;
+}
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #0a0a0a;
-            padding: 30px;
-            color: #fff;
-        }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .container {
-            max-width: 900px;
-            margin: auto;
-            background: #111;
-            padding: 30px;
-            border-radius: 18px;
-            border: 2px solid #b30000;
-        }
+html { scroll-behavior: smooth; }
 
-        h2 {
-            text-align: center;
-            color: #ff1a1a;
-        }
+body {
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 20px 16px 40px;
+}
 
-        h3 {
-            color: #ff4d4d;
-            margin-top: 25px;
-            border-bottom: 1px solid #ff1a1a;
-            padding-bottom: 5px;
-        }
+/* noise overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
 
-        label {
-            font-weight: bold;
-            margin-top: 12px;
-            display: block;
-        }
+.container {
+  max-width: 860px;
+  margin: auto;
+  position: relative;
+  z-index: 1;
+}
 
-        input, select, textarea {
-            width: 100%;
-            padding: 9px;
-            border-radius: 10px;
-            border: 1px solid #444;
-            background: #1c1c1c;
-            color: #fff;
-        }
+/* ── HEADER ─────────────────────────────────── */
+.header {
+  position: relative;
+  background: var(--s1);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 0;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
 
-        .checklist-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #1a1a1a;
-            padding: 10px 12px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            border: 1px solid #333;
-        }
+.header-stripe {
+  height: 4px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--red) 0, var(--red) 18px,
+    transparent 18px, transparent 24px
+  );
+}
 
-        .checklist-texto {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex: 1;
-        }
+.header-inner {
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px 18px;
+}
 
-        .tooltip {
-            position: relative;
-            cursor: pointer;
-            font-weight: bold;
-            color: #ff4d4d;
-        }
+.header-icon {
+  width: 60px;
+  height: 60px;
+  background: var(--red);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 20px rgba(229,0,18,0.4);
+}
 
-        .tooltip .tooltip-text {
-            visibility: hidden;
-            width: 260px;
-            background-color: #222;
-            color: #fff;
-            text-align: left;
-            padding: 10px;
-            border-radius: 10px;
-            position: absolute;
-            z-index: 10;
-            bottom: 140%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 13px;
-            line-height: 1.4;
-        }
+.header-title h1 {
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.header-title p {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+  margin-top: 5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
 
-        .tooltip:hover .tooltip-text {
-            visibility: visible;
-        }
+.header-meta {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: flex-end;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--red-glow);
+  border: 1px solid var(--red-dark);
+  border-radius: 4px;
+  padding: 4px 9px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #FF6070;
+  letter-spacing: 1px;
+}
+.badge-gray {
+  background: var(--s3);
+  border: 1px solid var(--border2);
+  color: var(--dim);
+}
 
-        .checklist-item select {
-            width: 140px;
-        }
+/* ── GEO STATUS ─────────────────────────────── */
+.geo-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--s2);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 22px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.5px;
+}
+.geo-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--dim);
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+.geo-dot.ok { background: #22c55e; box-shadow: 0 0 6px #22c55e80; }
+.geo-dot.err { background: var(--red); }
+.geo-dot.pulse {
+  background: #f59e0b;
+  animation: gpulse 1.2s infinite;
+}
+@keyframes gpulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-        button {
-            margin-top: 25px;
-            width: 100%;
-            padding: 14px;
-            font-size: 17px;
-            font-weight: bold;
-            border-radius: 16px;
-            border: none;
-            cursor: pointer;
-            color: #fff;
-            background: linear-gradient(135deg, #b30000, #ff1a1a);
-        }
+/* ── SECTIONS ────────────────────────────────── */
+.section {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 14px;
+  overflow: hidden;
+  animation: fadeUp 0.4s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.section:nth-child(2) { animation-delay: 0.05s; }
+.section:nth-child(3) { animation-delay: 0.10s; }
+.section:nth-child(4) { animation-delay: 0.15s; }
+.section:nth-child(5) { animation-delay: 0.20s; }
 
-        .btn-download {
-            background: #444;
-            margin-top: 12px;
-        }
-    </style>
+.sec-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 18px;
+  background: var(--s2);
+  border-bottom: 1px solid var(--border);
+}
+.sec-head i { color: var(--red); font-size: 13px; width: 16px; }
+.sec-head .sec-label {
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+}
+.sec-num {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--muted);
+}
+.sec-body { padding: 18px; }
+
+/* ── FIELDS ─────────────────────────────────── */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--red);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.field input, .field textarea {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 11px 13px;
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 14px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  width: 100%;
+}
+.field input:focus, .field textarea:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px var(--red-glow);
+}
+.field textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+/* ── SCORE ───────────────────────────────────── */
+.score-wrap {
+  border-top: 1px solid var(--border);
+  background: var(--s2);
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.score-label { font-family: var(--mono); font-size: 9px; color: var(--dim); letter-spacing: 1px; white-space: nowrap; }
+.score-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.score-fill  { height: 100%; background: var(--red); transition: width .4s ease, background .4s; width: 0%; border-radius: 2px; }
+.score-val   { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--red); min-width: 34px; text-align: right; }
+
+.score-pills { display: none; gap: 6px; flex-wrap: wrap; padding: 8px 18px; background: var(--s2); border-top: 1px solid var(--border); }
+.pill { font-family: var(--mono); font-size: 9px; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px; }
+.p-ok  { background: rgba(34,197,94,0.1);  color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+.p-no  { background: rgba(229,0,18,0.1);   color: #f87171; border: 1px solid rgba(229,0,18,0.25); }
+.p-na  { background: rgba(120,120,120,0.1); color: #888;   border: 1px solid #333; }
+
+/* ── TABLE ───────────────────────────────────── */
+.ck-table { width: 100%; border-collapse: collapse; }
+.ck-table th {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.ck-table th:last-child { text-align: right; }
+.ck-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  vertical-align: middle;
+}
+.ck-table tr:last-child td { border-bottom: none; }
+.ck-table td:first-child { font-family: var(--mono); font-size: 10px; color: var(--muted); width: 32px; }
+.ck-table tr { transition: background 0.12s; }
+.ck-table tr:hover td { background: rgba(255,255,255,0.015); }
+.ck-table tr.r-ok  td { background: rgba(34,197,94,0.035); }
+.ck-table tr.r-no  td { background: rgba(229,0,18,0.035); }
+
+.btn-group { display: flex; gap: 4px; justify-content: flex-end; }
+.status-btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 5px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--dim);
+  transition: all .15s;
+}
+.status-btn:hover { border-color: #555; color: var(--text); }
+.s-ok { background: rgba(34,197,94,0.12);  color: #4ade80; border-color: rgba(34,197,94,0.3); }
+.s-no { background: rgba(229,0,18,0.12);   color: #f87171; border-color: rgba(229,0,18,0.3); }
+.s-na { background: rgba(120,120,120,0.12); color: #888;   border-color: #333; }
+
+/* ── CHAR COUNTER ────────────────────────────── */
+.char-c { text-align: right; font-family: var(--mono); font-size: 10px; color: var(--muted); margin-top: -8px; margin-bottom: 0; }
+
+/* ── CAMERA ─────────────────────────────────── */
+.cam-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.act-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--s2);
+  color: var(--dim);
+  border: 1px dashed var(--border2);
+  padding: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--body);
+  font-size: 13px;
+  transition: all .2s;
+}
+.act-btn:hover { border-color: var(--red); color: var(--text); background: var(--red-glow); }
+.act-btn i { font-size: 16px; }
+
+video {
+  width: 100%;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  display: none;
+  border: 1px solid var(--border2);
+}
+
+.cap-controls { display: none; gap: 10px; margin-bottom: 12px; }
+.cap-btn {
+  background: var(--red); color: #fff; border: none;
+  padding: 12px 20px; border-radius: 7px;
+  cursor: pointer; font-family: var(--body); font-size: 13px; font-weight: 600;
+  flex: 1; transition: background .2s;
+}
+.cap-btn:hover { background: #C0000F; }
+.cxl-btn {
+  background: var(--s3); color: var(--dim);
+  border: 1px solid var(--border2); padding: 12px 20px;
+  border-radius: 7px; cursor: pointer; font-family: var(--body); font-size: 13px;
+  transition: all .15s;
+}
+.cxl-btn:hover { color: var(--text); border-color: #555; }
+
+.photo-meta { font-family: var(--mono); font-size: 10px; color: var(--dim); margin-bottom: 12px; }
+.photo-meta span { color: #ccc; }
+
+#preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+  gap: 8px; margin-top: 4px;
+}
+.foto-box { position: relative; }
+.foto-box img {
+  width: 100%; height: 108px; object-fit: cover;
+  border-radius: 6px; border: 1px solid var(--border2);
+  cursor: pointer; display: block; transition: opacity .2s, border-color .2s;
+}
+.foto-box img:hover { opacity: 0.82; border-color: var(--red); }
+.foto-label {
+  position: absolute; bottom: 5px; left: 5px;
+  background: rgba(3,3,3,0.78); font-family: var(--mono);
+  font-size: 9px; color: #aaa; padding: 2px 6px; border-radius: 3px;
+}
+.foto-geo {
+  position: absolute; bottom: 5px; right: 5px;
+  background: rgba(3,3,3,0.78); font-family: var(--mono);
+  font-size: 8px; color: #22c55e; padding: 2px 5px; border-radius: 3px;
+}
+.btn-del {
+  position: absolute; top: 5px; right: 5px;
+  background: rgba(229,0,18,0.85); color: #fff;
+  border: none; border-radius: 50%;
+  width: 20px; height: 20px;
+  cursor: pointer; font-size: 9px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .15s;
+}
+.foto-box:hover .btn-del { opacity: 1; }
+
+/* ── MAIN BTN ────────────────────────────────── */
+.main-btn {
+  width: 100%;
+  background: var(--red);
+  color: #fff;
+  padding: 17px;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all .2s;
+  position: relative;
+  overflow: hidden;
+}
+.main-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.09), transparent);
+  transition: left .5s;
+}
+.main-btn:hover::after { left: 100%; }
+.main-btn:hover { background: #C0000F; box-shadow: 0 6px 24px rgba(229,0,18,0.35); transform: translateY(-1px); }
+.main-btn:active { transform: scale(0.99); }
+
+/* ── TOAST ───────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 26px; right: 22px;
+  background: var(--s1); border: 1px solid var(--border2);
+  border-left: 3px solid var(--red);
+  padding: 10px 16px; border-radius: 8px;
+  font-size: 13px; color: var(--text);
+  opacity: 0; transform: translateY(8px);
+  transition: all .25s; z-index: 999;
+  max-width: 300px; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── LIGHTBOX ────────────────────────────────── */
+#visualizador {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.97);
+  display: none; align-items: center; justify-content: center;
+  z-index: 9999; backdrop-filter: blur(4px);
+}
+#visualizador.open { display: flex; }
+#visualizador img {
+  max-width: 90%; max-height: 90%;
+  border-radius: 8px; border: 1px solid var(--border2);
+}
+#fecharVis {
+  position: absolute; top: 20px; right: 26px;
+  font-size: 26px; cursor: pointer;
+  color: var(--dim); transition: color .2s;
+}
+#fecharVis:hover { color: var(--red); }
+
+@media (max-width: 580px) {
+  .header-inner { grid-template-columns: 50px 1fr; }
+  .header-meta  { display: none; }
+  .grid2 { grid-template-columns: 1fr; }
+  .cam-btns { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Formulário de Fiscalização de Serviços</h2>
 
-    <form id="formFiscalizacao">
+  <!-- HEADER -->
+  <div class="section header" style="margin-bottom:16px">
+    <div class="header-stripe"></div>
+    <div class="header-inner">
+      <div class="header-icon"><i class="fa-solid fa-tower-broadcast"></i></div>
+      <div class="header-title">
+        <h1>Instalação Fibra PRO</h1>
+        <p>Ficha Fiscal Técnica · Documento Digital</p>
+      </div>
+      <div class="header-meta">
+        <span class="badge"><i class="fa-solid fa-circle" style="font-size:7px"></i> ATIVO</span>
+        <span class="badge badge-gray">v3.0</span>
+      </div>
+    </div>
+    <!-- geo status bar -->
+    <div class="geo-bar" id="geoBar">
+      <span class="geo-dot" id="geoDot"></span>
+      <span id="geoTxt">Geolocalização aguardando câmera...</span>
+    </div>
+  </div>
 
-        <h3>1. Identificação</h3>
+  <!-- 01 DADOS -->
+  <div class="section">
+    <div class="sec-head">
+      <i class="fa-solid fa-id-card"></i>
+      <span class="sec-label">Dados da Visita</span>
+      <span class="sec-num">01 / 04</span>
+    </div>
+    <div class="sec-body">
+      <div class="grid2">
+        <div class="field"><label>Nome do Cliente</label><input id="cliente" placeholder="Ex: João da Silva"></div>
+        <div class="field"><label>Nome do Técnico</label><input id="tecnico" placeholder="Ex: Carlos Souza"></div>
+        <div class="field"><label>Fiscal do Dia</label><input id="fiscal" placeholder="Ex: Ana Lima"></div>
+        <div class="field"><label>Data da Visita</label><input type="date" id="data"></div>
+      </div>
+    </div>
+  </div>
 
-        <label>Nome do Técnico</label>
-        <input type="text" id="tecnico" required>
+  <!-- 02 CHECKLIST -->
+  <div class="section">
+    <div class="sec-head">
+      <i class="fa-solid fa-list-check"></i>
+      <span class="sec-label">Checklist de Verificação</span>
+      <span class="sec-num">02 / 04</span>
+    </div>
+    <table class="ck-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Verificação</th><th style="text-align:right">Status</th>
+        </tr>
+      </thead>
+      <tbody id="tabela"></tbody>
+    </table>
+    <div class="score-pills" id="pills">
+      <span class="pill p-ok" id="pOk"></span>
+      <span class="pill p-no" id="pNo"></span>
+      <span class="pill p-na" id="pNa"></span>
+    </div>
+    <div class="score-wrap">
+      <span class="score-label">CONFORMIDADE</span>
+      <div class="score-track"><div class="score-fill" id="sFill"></div></div>
+      <span class="score-val" id="sVal">—</span>
+    </div>
+  </div>
 
-        <label>CPF do Técnico</label>
-        <input type="text" id="cpf" required>
+  <!-- 03 OBSERVAÇÕES -->
+  <div class="section">
+    <div class="sec-head">
+      <i class="fa-solid fa-file-lines"></i>
+      <span class="sec-label">Observações</span>
+      <span class="sec-num">03 / 04</span>
+    </div>
+    <div class="sec-body">
+      <div class="field">
+        <label>Registro do Fiscal</label>
+        <textarea id="observacoes" maxlength="3000" placeholder="Registre ocorrências, pendências ou observações relevantes..."></textarea>
+      </div>
+      <div class="char-c"><span id="cObs">0</span> / 3000</div>
+    </div>
+  </div>
 
-        <label>Nome do Fiscal</label>
-        <input type="text" id="fiscal" required>
+  <!-- 04 FOTOS -->
+  <div class="section">
+    <div class="sec-head">
+      <i class="fa-solid fa-camera"></i>
+      <span class="sec-label">Registro Fotográfico</span>
+      <span class="sec-num">04 / 04</span>
+    </div>
+    <div class="sec-body">
+      <div class="photo-meta">Fotos: <span id="fCount">0</span> / 15 &nbsp;·&nbsp; <span id="geoLabel" style="color:var(--dim)">geoloc: aguardando</span></div>
+      <div class="cam-btns">
+        <button class="act-btn" onclick="abrirCamera()"><i class="fa-solid fa-camera"></i> Abrir Câmera</button>
+        <button class="act-btn" onclick="abrirGaleria()"><i class="fa-solid fa-images"></i> Galeria</button>
+      </div>
+      <video id="camera" autoplay playsinline></video>
+      <div class="cap-controls" id="capControls">
+        <button class="cap-btn" onclick="tirarFoto()"><i class="fa-solid fa-circle"></i> Capturar</button>
+        <button class="cxl-btn" onclick="fecharCamera()">Cancelar</button>
+      </div>
+      <input type="file" id="galeria" accept="image/*" multiple style="display:none">
+      <canvas id="canvas" style="display:none"></canvas>
+      <div id="preview"></div>
+    </div>
+  </div>
 
-        <label>Data da Fiscalização</label>
-        <input type="date" id="data" required>
+  <button onclick="gerarPDF()" class="main-btn" id="btnPDF">
+    <i class="fa-solid fa-file-export"></i>
+    Gerar &amp; Compartilhar PDF
+  </button>
 
-        <label>Número da OS / Serviço</label>
-        <input type="text" id="os" required>
-
-        <h3>2. Check-list Técnico (15 Itens)</h3>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                1. Uso correto de EPI
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Verifique se o técnico está utilizando corretamente todos os Equipamentos de Proteção Individual.</span>
-                </span>
-            </div>
-            <select id="item1"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                2. Uso correto de EPC
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Confirme se os Equipamentos de Proteção Coletiva estão sendo utilizados corretamente.</span>
-                </span>
-            </div>
-            <select id="item2"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                3. Organização do veículo
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Avalie se o veículo está organizado e sem objetos soltos.</span>
-                </span>
-            </div>
-            <select id="item3"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                4. Limpeza do veículo
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Verifique se o veículo está limpo interna e externamente.</span>
-                </span>
-            </div>
-            <select id="item4"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                5. Ferramental completo
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Confirme se todas as ferramentas necessárias estão disponíveis.</span>
-                </span>
-            </div>
-            <select id="item5"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                6. Ferramental organizado
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Verifique se as ferramentas estão guardadas corretamente.</span>
-                </span>
-            </div>
-            <select id="item6"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                7. Instalação limpa
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Avalie se o local foi deixado limpo após o serviço.</span>
-                </span>
-            </div>
-            <select id="item7"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                8. Instalação segura
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Confirme se a instalação segue todas as normas de segurança.</span>
-                </span>
-            </div>
-            <select id="item8"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                9. Equipamentos bem fixados
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Verifique se os equipamentos estão firmes e sem risco de queda.</span>
-                </span>
-            </div>
-            <select id="item9"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                10. Cabo organizado
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Avalie se os cabos estão organizados e sem excesso visível.</span>
-                </span>
-            </div>
-            <select id="item10"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                11. Atendimento adequado ao cliente
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Verifique se o técnico manteve postura profissional e cordial.</span>
-                </span>
-            </div>
-            <select id="item11"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                12. Testes realizados corretamente
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Confirme se todos os testes necessários foram realizados.</span>
-                </span>
-            </div>
-            <select id="item12"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                13. Identificação correta dos cabos
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Verifique se os cabos foram identificados corretamente conforme padrão.</span>
-                </span>
-            </div>
-            <select id="item13"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                14. Uso correto de materiais
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Avalie se os materiais utilizados estão dentro do padrão técnico.</span>
-                </span>
-            </div>
-            <select id="item14"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <div class="checklist-item">
-            <div class="checklist-texto">
-                15. Finalização adequada do serviço
-                <span class="tooltip">❓
-                    <span class="tooltip-text">Confirme se o serviço foi finalizado corretamente e informado ao cliente.</span>
-                </span>
-            </div>
-            <select id="item15"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-        </div>
-
-        <h3>3. Avaliação Geral</h3>
-
-        <label>Houve atraso?</label>
-        <select id="atraso"><option value="">Neutro</option><option>Não</option><option>Sim</option></select>
-
-        <label>Houve falta injustificada?</label>
-        <select id="falta"><option value="">Neutro</option><option>Não</option><option>Sim</option></select>
-
-        <label>Produção mínima cumprida?</label>
-        <select id="producao"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-
-        <label>Veículo em bom estado?</label>
-        <select id="veiculo"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-
-        <label>Ferramental completo?</label>
-        <select id="ferramentas"><option value="">Neutro</option><option>Sim</option><option>Não</option></select>
-
-        <h3>4. Observações</h3>
-        <textarea id="observacoes" placeholder="Descreva qualquer observação relevante..."></textarea>
-
-        <h3>5. Confirmação</h3>
-        <label><input type="checkbox" id="confirmacao" required> Confirmo que as informações acima são verdadeiras.</label>
-
-        <button type="button" onclick="gerarRelatorioPDF()">Baixar Relatório (PDF)</button>
-
-    </form>
 </div>
 
+<div id="visualizador">
+  <span id="fecharVis" onclick="fecharVis()"><i class="fa-solid fa-xmark"></i></span>
+  <img id="imgVis">
+</div>
+<div class="toast" id="toast"></div>
+
 <script>
-    const { jsPDF } = window.jspdf;
+// ── CHECKLIST ──────────────────────────────────────────
+const verificacoes = [
+  "Acomodação da fibra na CTO",
+  "Identificação do DROP",
+  "CTO correta conforme projeto",
+  "Identificação da CTO",
+  "Organização interna da CTO",
+  "Trajeto do DROP",
+  "Fixação em fachada",
+  "Entrada do cabo na residência",
+  "Instalação do PTO",
+  "Teste WiFi",
+  "Parâmetros da fibra",
+  "Cliente orientado sobre WiFi",
+  "Organização geral da instalação",
+  "Uso de EPI pelo técnico",
+  "Registro fotográfico",
+  "Qualidade final da instalação"
+];
 
-    function gerarRelatorioPDF() {
-        const doc = new jsPDF();
-        let y = 15;
-        const linha = 7;
+const tabela = document.getElementById("tabela");
+verificacoes.forEach((v, i) => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${String(i+1).padStart(2,"0")}</td>
+    <td>${v}</td>
+    <td>
+      <div class="btn-group">
+        <button class="status-btn" data-v="Sim" onclick="sel(this,${i})">Sim</button>
+        <button class="status-btn" data-v="Não" onclick="sel(this,${i})">Não</button>
+        <button class="status-btn" data-v="N/A" onclick="sel(this,${i})">N/A</button>
+      </div>
+    </td>`;
+  tabela.appendChild(tr);
+});
 
-        function escrever(texto) {
-            doc.text(texto, 15, y);
-            y += linha;
-        }
+function sel(btn, i) {
+  const row = tabela.rows[i];
+  row.querySelectorAll(".status-btn").forEach(b => b.className = "status-btn");
+  const v = btn.dataset.v;
+  btn.classList.add(v==="Sim"?"s-ok":v==="Não"?"s-no":"s-na");
+  row.className = v==="Sim"?"r-ok":v==="Não"?"r-no":"";
+  score();
+}
 
-        function escreverTitulo(texto) {
-            doc.setFontSize(14);
-            doc.text(texto, 15, y);
-            y += linha + 3;
-            doc.setFontSize(11);
-        }
+function score() {
+  let ok=0, no=0, na=0;
+  tabela.querySelectorAll("tr").forEach(tr => {
+    if(tr.querySelector(".s-ok")) ok++;
+    else if(tr.querySelector(".s-no")) no++;
+    else if(tr.querySelector(".s-na")) na++;
+  });
+  const total = ok+no;
+  const pills = document.getElementById("pills");
+  if(total>0||na>0) {
+    pills.style.display="flex";
+    document.getElementById("pOk").textContent=`✓ ${ok} Conforme`;
+    document.getElementById("pNo").textContent=`✗ ${no} Não Conforme`;
+    document.getElementById("pNa").textContent=`– ${na} N/A`;
+  }
+  const fill = document.getElementById("sFill");
+  const val  = document.getElementById("sVal");
+  if(!total){fill.style.width="0%";val.textContent="—";return;}
+  const pct = Math.round((ok/total)*100);
+  fill.style.width = pct+"%";
+  const clr = pct>=80?"#22c55e":pct>=50?"#f59e0b":"#ef4444";
+  fill.style.background = clr;
+  val.textContent = pct+"%"; val.style.color = clr;
+}
 
-        const tecnico = document.getElementById("tecnico").value;
-        const cpf = document.getElementById("cpf").value;
-        const fiscal = document.getElementById("fiscal").value;
-        const data = document.getElementById("data").value;
-        const os = document.getElementById("os").value;
+// ── OBSERVAÇÕES ──
+document.getElementById("observacoes").addEventListener("input",function(){
+  document.getElementById("cObs").textContent=this.value.length;
+});
 
-        escreverTitulo("RELATÓRIO DE FISCALIZAÇÃO DE SERVIÇOS");
+// ── GEO ──────────────────────────────────────────────
+let enderecoFoto = "";
+let geoCoords    = null;
 
-        escrever(`Técnico: ${tecnico}`);
-        escrever(`CPF: ${cpf}`);
-        escrever(`Fiscal: ${fiscal}`);
-        escrever(`Data: ${data}`);
-        escrever(`OS / Serviço: ${os}`);
+function setGeo(state, txt) {
+  const dot = document.getElementById("geoDot");
+  const el  = document.getElementById("geoTxt");
+  dot.className = "geo-dot " + state;
+  el.textContent = txt;
+  document.getElementById("geoLabel").textContent = "geoloc: " + (state==="ok"?"ativo ✓":state==="err"?"erro":"aguardando");
+  document.getElementById("geoLabel").style.color = state==="ok"?"#22c55e":state==="err"?"#f87171":"var(--dim)";
+}
 
-        y += 5;
-        escreverTitulo("CHECK-LIST TÉCNICO");
-
-        const perguntas = [
-            "1. Uso correto de EPI",
-            "2. Uso correto de EPC",
-            "3. Organização do veículo",
-            "4. Limpeza do veículo",
-            "5. Ferramental completo",
-            "6. Ferramental organizado",
-            "7. Instalação limpa",
-            "8. Instalação segura",
-            "9. Equipamentos bem fixados",
-            "10. Cabo organizado",
-            "11. Atendimento adequado",
-            "12. Testes realizados",
-            "13. Identificação dos cabos",
-            "14. Uso correto de materiais",
-            "15. Finalização do serviço"
-        ];
-
-        perguntas.forEach((texto, index) => {
-            const valor = document.getElementById(`item${index + 1}`).value || "Neutro";
-            escrever(`${texto}: ${valor}`);
-        });
-
-        y += 5;
-        escreverTitulo("AVALIAÇÃO GERAL");
-
-        escrever(`Houve atraso?: ${document.getElementById("atraso").value || "Neutro"}`);
-        escrever(`Houve falta injustificada?: ${document.getElementById("falta").value || "Neutro"}`);
-        escrever(`Produção mínima cumprida?: ${document.getElementById("producao").value || "Neutro"}`);
-        escrever(`Veículo em bom estado?: ${document.getElementById("veiculo").value || "Neutro"}`);
-        escrever(`Ferramental completo?: ${document.getElementById("ferramentas").value || "Neutro"}`);
-
-        y += 5;
-        escreverTitulo("OBSERVAÇÕES");
-
-        const observacoes = document.getElementById("observacoes").value || "Nenhuma observação registrada.";
-        const linhasObs = doc.splitTextToSize(observacoes, 170);
-        doc.text(linhasObs, 15, y);
-        y += linhasObs.length * linha + 5;
-
-        escreverTitulo("CONFIRMAÇÃO");
-
-        escrever("Declaro que as informações acima são verdadeiras.");
-        escrever("Assinatura do Fiscal: ___________________________");
-        escrever("Assinatura do Técnico: _________________________");
-        escrever("Data: ____/____/________");
-
-        const nomeArquivo = `relatorio_fiscalizacao_${tecnico || "tecnico"}_${data || "data"}.pdf`;
-        doc.save(nomeArquivo);
+function buscarGeo() {
+  if (!navigator.geolocation) { setGeo("err","Geolocalização não suportada"); return; }
+  setGeo("pulse","Obtendo localização...");
+  navigator.geolocation.getCurrentPosition(async pos => {
+    const lat = pos.coords.latitude.toFixed(6);
+    const lon = pos.coords.longitude.toFixed(6);
+    geoCoords = { lat, lon };
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+      const d = await r.json();
+      enderecoFoto = d.display_name || `${lat}, ${lon}`;
+      const curto = enderecoFoto.length>60 ? enderecoFoto.substring(0,60)+"…" : enderecoFoto;
+      setGeo("ok", curto);
+    } catch {
+      enderecoFoto = `Lat:${lat} Lon:${lon}`;
+      setGeo("ok", enderecoFoto);
     }
-</script>
+  }, () => { setGeo("err","Permissão de localização negada"); });
+}
 
+// ── CÂMERA ───────────────────────────────────────────
+let fotos = [], stream = null;
+const video = document.getElementById("camera");
+
+async function abrirCamera() {
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video:{ facingMode:"environment", width:{ideal:1920}, height:{ideal:1080} }
+    });
+    video.srcObject = stream;
+    video.style.display = "block";
+    document.getElementById("capControls").style.display = "flex";
+    buscarGeo();
+  } catch { toast("Câmera não disponível"); }
+}
+
+function fecharCamera() {
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+  video.style.display = "none";
+  document.getElementById("capControls").style.display = "none";
+}
+
+function tirarFoto() {
+  if(fotos.length>=15){toast("Limite de 15 fotos atingido");return;}
+  const canvas=document.getElementById("canvas");
+  canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+  const ctx=canvas.getContext("2d");
+  ctx.drawImage(video,0,0);
+
+  // overlay
+  const agora=new Date();
+  const hora=agora.toLocaleTimeString("pt-BR");
+  const data=agora.toLocaleDateString("pt-BR");
+  const endCurto=enderecoFoto?enderecoFoto.substring(0,70):"Sem localização";
+  const overlayH=110;
+
+  ctx.fillStyle="rgba(0,0,0,0.62)";
+  ctx.fillRect(0,canvas.height-overlayH,canvas.width,overlayH);
+
+  // red accent bar
+  ctx.fillStyle="#E50012";
+  ctx.fillRect(0,canvas.height-overlayH,6,overlayH);
+
+  ctx.fillStyle="#fff";
+  ctx.font="bold 30px Arial";
+  ctx.fillText(hora,20,canvas.height-65);
+
+  ctx.font="20px Arial";
+  ctx.fillStyle="#ccc";
+  ctx.fillText(data,20,canvas.height-38);
+
+  ctx.font="16px Arial";
+  ctx.fillStyle="#aaa";
+  ctx.fillText(endCurto,20,canvas.height-12);
+
+  fotos.push({
+    data: canvas.toDataURL("image/jpeg",0.88),
+    endereco: enderecoFoto,
+    hora: agora.toLocaleString("pt-BR")
+  });
+  mostrarPreview();
+  toast(`Foto ${fotos.length}/15 capturada`);
+}
+
+function abrirGaleria(){document.getElementById("galeria").click();}
+document.getElementById("galeria").onchange=function(e){
+  const faltam=15-fotos.length;
+  if(e.target.files.length>faltam) toast(`Apenas ${faltam} foto(s) adicionada(s) — limite atingido`);
+  Array.from(e.target.files).slice(0,faltam).forEach(f=>{
+    const r=new FileReader();
+    r.onload=ev=>{ fotos.push({data:ev.target.result,endereco:"",hora:""}); mostrarPreview(); };
+    r.readAsDataURL(f);
+  });
+  e.target.value="";
+};
+
+function mostrarPreview(){
+  const p=document.getElementById("preview");
+  p.innerHTML="";
+  fotos.forEach((foto,i)=>{
+    const d=document.createElement("div");
+    d.className="foto-box";
+    const temGeo=foto.endereco && foto.endereco.length>0;
+    d.innerHTML=`
+      <img src="${foto.data}" onclick="abrirVis(${i})">
+      <span class="foto-label">${String(i+1).padStart(2,"0")}</span>
+      ${temGeo?`<span class="foto-geo"><i class="fa-solid fa-location-dot" style="font-size:8px"></i></span>`:""}
+      <button class="btn-del" onclick="delFoto(${i})"><i class="fa-solid fa-xmark"></i></button>`;
+    p.appendChild(d);
+  });
+  document.getElementById("fCount").textContent=fotos.length;
+}
+
+function delFoto(i){fotos.splice(i,1);mostrarPreview();}
+function abrirVis(i){
+  document.getElementById("imgVis").src=fotos[i].data;
+  document.getElementById("visualizador").classList.add("open");
+}
+function fecharVis(){document.getElementById("visualizador").classList.remove("open");}
+
+// ── TOAST ──
+function toast(msg){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.classList.add("show");
+  setTimeout(()=>el.classList.remove("show"),2800);
+}
+
+// ── COLETA ──
+function coletarStatus() {
+  const m={};
+  tabela.querySelectorAll("tr").forEach((tr,i)=>{
+    m[i]=tr.querySelector(".s-ok")?"Sim":tr.querySelector(".s-no")?"Não":tr.querySelector(".s-na")?"N/A":"—";
+  });
+  return m;
+}
+
+// ── COMPARTILHAR ──
+async function compartilharPDF(doc){
+  let tec=document.getElementById("tecnico").value.trim()||"Tecnico";
+  let cli=document.getElementById("cliente").value.trim()||"Cliente";
+  let dat=document.getElementById("data").value||"Data";
+  const nome=(tec+"_"+cli+"_"+dat).replace(/\s+/g,"_").replace(/[^a-zA-Z0-9_\-]/g,"_")+".pdf";
+  const blob=doc.output("blob");
+  const file=new File([blob],nome,{type:"application/pdf"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{ await navigator.share({title:"Relatório de Instalação",text:"Relatório Fibra PRO",files:[file]}); }
+    catch(e){ if(e.name!=="AbortError") doc.save(nome); }
+  } else { doc.save(nome); }
+}
+
+// ── GERAR PDF ──────────────────────────────────────────
+async function gerarPDF() {
+  const btn=document.getElementById("btnPDF");
+  btn.style.opacity="0.65";
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Gerando PDF...';
+  await new Promise(r=>setTimeout(r,90));
+
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:"mm",format:"a4"});
+  const W=210,H=297,M=14,CW=W-M*2;
+
+  const C={
+    bg:    [3,3,3],
+    s1:    [10,10,10],
+    s2:    [17,17,17],
+    red:   [229,0,18],
+    reddim:[140,0,11],
+    silv:  [236,236,236],
+    silv2: [200,200,200],
+    gray:  [100,100,100],
+    dim:   [50,50,50],
+    grn:   [34,197,94],
+    org:   [245,158,11],
+    err:   [239,68,68],
+    wht:   [255,255,255],
+  };
+  const sf=c=>doc.setFillColor(...c);
+  const sd=c=>doc.setDrawColor(...c);
+  const st=c=>doc.setTextColor(...c);
+
+  const sm=coletarStatus();
+  const cliente=document.getElementById("cliente").value.trim()||"Não informado";
+  const tecnico=document.getElementById("tecnico").value.trim()||"Não informado";
+  const fiscal=document.getElementById("fiscal").value.trim()||"Não informado";
+  const data=document.getElementById("data").value
+    ?new Date(document.getElementById("data").value+"T12:00:00").toLocaleDateString("pt-BR")
+    :"Não informada";
+  const obsText=document.getElementById("observacoes").value.trim()||"Nenhuma observação registrada.";
+
+  let y=0;
+
+  // ── CAPA ──
+  sf(C.bg); doc.rect(0,0,W,H,"F");
+  // stripe header
+  sf(C.red); doc.rect(0,0,W,2,"F");
+  // dashes stripe
+  for(let x=0;x<W;x+=7){
+    if(Math.floor(x/7)%2===0){sf(C.red);doc.rect(x,2,4,2,"F");}
+  }
+  // header bg
+  sf(C.s1); doc.rect(0,4,W,48,"F");
+  sf([15,15,15]); doc.rect(0,52,W,0.4,"F");
+
+  // icon
+  sf(C.red); doc.roundedRect(M,10,34,34,4,4,"F");
+  st(C.wht); doc.setFont("helvetica","bold"); doc.setFontSize(9);
+  doc.text("FIBRA\nPRO",M+17,23,{align:"center",lineHeightFactor:1.4});
+
+  // title
+  st(C.silv); doc.setFont("helvetica","bold"); doc.setFontSize(20);
+  doc.text("RELATÓRIO DE INSTALAÇÃO FIBRA PRO",M+40,22);
+  st(C.gray); doc.setFont("helvetica","normal"); doc.setFontSize(8);
+  doc.text("FICHA FISCAL TÉCNICA  ·  DOCUMENTO DIGITAL OFICIAL",M+40,30);
+
+  st([80,80,80]); doc.setFontSize(7.5);
+  doc.text("Gerado em: "+new Date().toLocaleString("pt-BR"),W-M,42,{align:"right"});
+
+  y=62;
+
+  // section header helper
+  function secH(title,yp){
+    sf(C.s2); doc.rect(M,yp,CW,8,"F");
+    sf(C.red); doc.rect(M,yp,3,8,"F");
+    st(C.silv2); doc.setFont("helvetica","bold"); doc.setFontSize(8.5);
+    doc.text(title.toUpperCase(),M+7,yp+5.5);
+    return yp+8+4;
+  }
+
+  // ── DADOS ──
+  y=secH("Dados da Visita",y);
+  const cw2=(CW-6)/2;
+  [["Cliente",cliente],["Técnico",tecnico],["Fiscal",fiscal],["Data",data]].forEach(([l,v],i)=>{
+    const col=i%2,row=Math.floor(i/2);
+    const cx=M+col*(cw2+6),cy=y+row*15;
+    sf(C.s2); doc.roundedRect(cx,cy,cw2,12,2,2,"F");
+    sf(C.red); doc.roundedRect(cx,cy,2,12,0,0,"F");
+    st(C.red); doc.setFont("helvetica","bold"); doc.setFontSize(6);
+    doc.text(l.toUpperCase(),cx+5,cy+4.5);
+    st(C.silv); doc.setFont("helvetica","normal"); doc.setFontSize(9);
+    doc.text(v,cx+5,cy+10);
+  });
+  y+=Math.ceil(4/2)*15+8;
+
+  // ── SCORE ──
+  y=secH("Resultado do Checklist",y);
+  let ok=0,no=0,na=0;
+  Object.values(sm).forEach(v=>{if(v==="Sim")ok++;else if(v==="Não")no++;else if(v==="N/A")na++;});
+  const tot=ok+no;
+  const pct=tot>0?Math.round((ok/tot)*100):null;
+  const sClr=pct===null?C.gray:pct>=80?C.grn:pct>=50?C.org:C.err;
+
+  sf(C.s2); doc.roundedRect(M,y,CW,18,2,2,"F");
+  sf(sClr); doc.roundedRect(M,y,3,18,0,0,"F");
+  st(C.gray); doc.setFont("helvetica","bold"); doc.setFontSize(7);
+  doc.text("CONFORMIDADE GERAL",M+7,y+6);
+  st(sClr); doc.setFont("helvetica","bold"); doc.setFontSize(22);
+  doc.text(pct!==null?pct+"%":"—",M+7,y+16.5);
+
+  // mini stats
+  const sx=M+65;
+  st(C.grn); doc.setFont("helvetica","normal"); doc.setFontSize(7.5);
+  doc.text(`✓ ${ok} Conforme`,sx,y+8);
+  st(C.err); doc.text(`✗ ${no} Não Conforme`,sx,y+13.5);
+  st(C.gray); doc.text(`– ${na} N/A`,sx+44,y+8);
+  doc.text(`${tot} avaliados`,sx+44,y+13.5);
+
+  // track bar
+  const bx=M+112,bw=CW-(bx-M)-4,by=y+9;
+  sf(C.s1); doc.roundedRect(bx,by,bw,3.5,1,1,"F");
+  if(pct!==null){sf(sClr);doc.roundedRect(bx,by,bw*(pct/100),3.5,1,1,"F");}
+  y+=22;
+
+  // ── CHECKLIST TABLE ──
+  y=secH("Checklist de Verificação",y);
+  doc.autoTable({
+    startY:y,
+    head:[["Nº","VERIFICAÇÃO","STATUS"]],
+    body:verificacoes.map((v,i)=>[String(i+1).padStart(2,"0"),v,sm[i]||"—"]),
+    margin:{left:M,right:M},
+    headStyles:{fillColor:[17,17,17],textColor:[55,55,55],fontStyle:"bold",fontSize:7,cellPadding:3},
+    bodyStyles:{fillColor:[10,10,10],textColor:[210,210,210],fontSize:8,cellPadding:{top:3,bottom:3,left:4,right:4}},
+    alternateRowStyles:{fillColor:[13,13,13]},
+    columnStyles:{
+      0:{cellWidth:10,halign:"center",textColor:[45,45,45]},
+      1:{cellWidth:"auto"},
+      2:{cellWidth:22,halign:"center",fontStyle:"bold"},
+    },
+    didParseCell(d){
+      if(d.column.index===2&&d.section==="body"){
+        const v=d.cell.raw;
+        if(v==="Sim") d.cell.styles.textColor=[34,197,94];
+        else if(v==="Não") d.cell.styles.textColor=[239,68,68];
+        else if(v==="N/A") d.cell.styles.textColor=[100,100,100];
+        else d.cell.styles.textColor=[40,40,40];
+      }
+    },
+    tableLineColor:[28,28,28],tableLineWidth:0.2,
+  });
+  y=doc.lastAutoTable.finalY+8;
+
+  // ── OBSERVAÇÕES ──
+  if(y>H-50){doc.addPage();sf(C.bg);doc.rect(0,0,W,H,"F");y=18;}
+  y=secH("Observações do Fiscal",y);
+  const lines=doc.splitTextToSize(obsText,CW-12);
+  const oH=Math.max(22,lines.length*4.8+10);
+  sf(C.s2); doc.roundedRect(M,y,CW,oH,2,2,"F");
+  sf(C.red); doc.roundedRect(M,y,3,oH,0,0,"F");
+  st(C.silv); doc.setFont("helvetica","normal"); doc.setFontSize(8.5);
+  doc.text(lines,M+7,y+7);
+  y+=oH+8;
+
+  // ── FOTOS ──
+  if(fotos.length>0){
+    if(y>H-60){doc.addPage();sf(C.bg);doc.rect(0,0,W,H,"F");y=18;}
+    y=secH(`Registro Fotográfico (${fotos.length} foto(s))`,y);
+    const cols=3,gap=4;
+    const fw=(CW-gap*(cols-1))/cols,fh=fw*0.65;
+    for(let i=0;i<fotos.length;i++){
+      const col=i%cols,newRow=col===0&&i>0;
+      if(newRow)y+=fh+gap+8;
+      if(y+fh>H-20){doc.addPage();sf(C.bg);doc.rect(0,0,W,H,"F");y=18;}
+      const fx=M+col*(fw+gap);
+      sf(C.s2);doc.roundedRect(fx-1,y-1,fw+2,fh+2,2,2,"F");
+      try{doc.addImage(fotos[i].data,"JPEG",fx,y,fw,fh,undefined,"FAST");}catch(e){}
+      // foto number
+      sf(C.bg);doc.roundedRect(fx+2,y+2,8,5,1,1,"F");
+      st(C.red);doc.setFont("helvetica","bold");doc.setFontSize(5.5);
+      doc.text(String(i+1).padStart(2,"0"),fx+6,y+5.8,{align:"center"});
+      // geo tag
+      if(fotos[i].endereco){
+        const geo=fotos[i].endereco.substring(0,40)+(fotos[i].endereco.length>40?"…":"");
+        sf([0,30,0]);doc.roundedRect(fx+1,y+fh-8,fw-2,7,1,1,"F");
+        st(C.grn);doc.setFont("helvetica","normal");doc.setFontSize(4.5);
+        doc.text("📍 "+geo,fx+3,y+fh-3.5);
+      }
+    }
+    y+=fh+8;
+  }
+
+  // ── ASSINATURAS ──
+  if(y>H-55){doc.addPage();sf(C.bg);doc.rect(0,0,W,H,"F");y=18;}
+  y=secH("Validação e Assinaturas",y);
+  const sw=(CW-8)/2;
+  [["Técnico Responsável",tecnico],["Fiscal do Dia",fiscal]].forEach(([l,n],i)=>{
+    const sx=M+i*(sw+8);
+    sf(C.s2);doc.roundedRect(sx,y,sw,28,2,2,"F");
+    sf(C.red);doc.roundedRect(sx,y,3,28,0,0,"F");
+    st([50,50,50]);doc.setFont("helvetica","normal");doc.setFontSize(7);
+    doc.text(n,sx+sw/2,y+8,{align:"center"});
+    sd([30,30,30]);doc.setLineWidth(0.3);
+    doc.line(sx+8,y+21,sx+sw-8,y+21);
+    st(C.gray);doc.setFontSize(7);
+    doc.text(l,sx+sw/2,y+26,{align:"center"});
+  });
+
+  // ── RODAPÉ ──
+  const pages=doc.internal.getNumberOfPages();
+  for(let pg=1;pg<=pages;pg++){
+    doc.setPage(pg);
+    sf(C.s1);doc.rect(0,H-11,W,11,"F");
+    sf(C.red);doc.rect(0,H-11,W,0.4,"F");
+    st(C.gray);doc.setFont("helvetica","normal");doc.setFontSize(6.5);
+    doc.text("Fibra PRO  ·  Ficha Fiscal Técnica  ·  Gerado digitalmente",M,H-5);
+    doc.text(`Página ${pg} de ${pages}`,W-M,H-5,{align:"right"});
+  }
+
+  btn.style.opacity="1";
+  btn.innerHTML='<i class="fa-solid fa-file-export"></i> Gerar &amp; Compartilhar PDF';
+
+  await compartilharPDF(doc);
+  toast("PDF gerado com sucesso!");
+}
+</script>
 </body>
 </html>
