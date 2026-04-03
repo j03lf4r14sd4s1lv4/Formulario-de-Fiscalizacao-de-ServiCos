@@ -830,216 +830,155 @@ async function gerarPDF() {
 
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({unit:"mm",format:"a4"});
-  const W=210,H=297,M=14,CW=W-M*2;
+  const W=210,H=297,M=20;
 
-  const C={
-    bg:    [3,3,3],
-    s1:    [10,10,10],
-    s2:    [17,17,17],
-    red:   [229,0,18],
-    reddim:[140,0,11],
-    silv:  [236,236,236],
-    silv2: [200,200,200],
-    gray:  [100,100,100],
-    dim:   [50,50,50],
-    grn:   [34,197,94],
-    org:   [245,158,11],
-    err:   [239,68,68],
-    wht:   [255,255,255],
-  };
-  const sf=c=>doc.setFillColor(...c);
-  const sd=c=>doc.setDrawColor(...c);
-  const st=c=>doc.setTextColor(...c);
+  const RED  =[255,0,0];
+  const BLACK=[30,30,30];
+  const GRAY =[100,100,100];
+  const LGRAY=[200,200,200];
+  const WHITE=[255,255,255];
+  const GRN  =[0,130,60];
+  const ORG  =[180,90,0];
+  const ERR  =[180,0,0];
+
+  const sf=(...c)=>doc.setFillColor(...(c.length===1?c[0]:c));
+  const sd=(...c)=>doc.setDrawColor(...(c.length===1?c[0]:c));
+  const st=(...c)=>doc.setTextColor(...(c.length===1?c[0]:c));
 
   const sm=coletarStatus();
   const cliente=document.getElementById("cliente").value.trim()||"Não informado";
   const tecnico=document.getElementById("tecnico").value.trim()||"Não informado";
-  const fiscal=document.getElementById("fiscal").value.trim()||"Não informado";
-  const data=document.getElementById("data").value
+  const fiscal =document.getElementById("fiscal").value.trim()||"Não informado";
+  const data   =document.getElementById("data").value
     ?new Date(document.getElementById("data").value+"T12:00:00").toLocaleDateString("pt-BR")
     :"Não informada";
-  const obsText=document.getElementById("observacoes").value.trim()||"Nenhuma observação registrada.";
+  const obsText=document.getElementById("observacoes").value.trim()||"Sem observações.";
 
-  let y=0;
+  let y=20;
 
-  // ── CAPA ──
-  sf(C.bg); doc.rect(0,0,W,H,"F");
-  // stripe header
-  sf(C.red); doc.rect(0,0,W,2,"F");
-  // dashes stripe
-  for(let x=0;x<W;x+=7){
-    if(Math.floor(x/7)%2===0){sf(C.red);doc.rect(x,2,4,2,"F");}
-  }
-  // header bg
-  sf(C.s1); doc.rect(0,4,W,48,"F");
-  sf([15,15,15]); doc.rect(0,52,W,0.4,"F");
+  // TÍTULO
+  st(...BLACK); doc.setFont("helvetica","bold"); doc.setFontSize(18);
+  doc.text("RELATÓRIO DE INSTALAÇÃO FIBRA PRO",W/2,y,{align:"center"});
+  y+=5;
+  sd(...LGRAY); doc.setLineWidth(0.3); doc.line(M,y,W-M,y);
+  y+=9;
 
-  // icon
-  sf(C.red); doc.roundedRect(M,10,34,34,4,4,"F");
-  st(C.wht); doc.setFont("helvetica","bold"); doc.setFontSize(9);
-  doc.text("FIBRA\nPRO",M+17,23,{align:"center",lineHeightFactor:1.4});
+  // DADOS
+  st(...BLACK); doc.setFont("helvetica","normal"); doc.setFontSize(11);
+  doc.text("Cliente: "+cliente, M, y); y+=7;
+  doc.text("Técnico: "+tecnico, M, y); y+=7;
+  doc.text("Fiscal: " +fiscal,  M, y); y+=7;
+  doc.text("Data: "   +data,    M, y); y+=7;
 
-  // title
-  st(C.silv); doc.setFont("helvetica","bold"); doc.setFontSize(20);
-  doc.text("RELATÓRIO DE INSTALAÇÃO FIBRA PRO",M+40,22);
-  st(C.gray); doc.setFont("helvetica","normal"); doc.setFontSize(8);
-  doc.text("FICHA FISCAL TÉCNICA  ·  DOCUMENTO DIGITAL OFICIAL",M+40,30);
-
-  st([80,80,80]); doc.setFontSize(7.5);
-  doc.text("Gerado em: "+new Date().toLocaleString("pt-BR"),W-M,42,{align:"right"});
-
-  y=62;
-
-  // section header helper
-  function secH(title,yp){
-    sf(C.s2); doc.rect(M,yp,CW,8,"F");
-    sf(C.red); doc.rect(M,yp,3,8,"F");
-    st(C.silv2); doc.setFont("helvetica","bold"); doc.setFontSize(8.5);
-    doc.text(title.toUpperCase(),M+7,yp+5.5);
-    return yp+8+4;
-  }
-
-  // ── DADOS ──
-  y=secH("Dados da Visita",y);
-  const cw2=(CW-6)/2;
-  [["Cliente",cliente],["Técnico",tecnico],["Fiscal",fiscal],["Data",data]].forEach(([l,v],i)=>{
-    const col=i%2,row=Math.floor(i/2);
-    const cx=M+col*(cw2+6),cy=y+row*15;
-    sf(C.s2); doc.roundedRect(cx,cy,cw2,12,2,2,"F");
-    sf(C.red); doc.roundedRect(cx,cy,2,12,0,0,"F");
-    st(C.red); doc.setFont("helvetica","bold"); doc.setFontSize(6);
-    doc.text(l.toUpperCase(),cx+5,cy+4.5);
-    st(C.silv); doc.setFont("helvetica","normal"); doc.setFontSize(9);
-    doc.text(v,cx+5,cy+10);
-  });
-  y+=Math.ceil(4/2)*15+8;
-
-  // ── SCORE ──
-  y=secH("Resultado do Checklist",y);
+  // Score inline
   let ok=0,no=0,na=0;
   Object.values(sm).forEach(v=>{if(v==="Sim")ok++;else if(v==="Não")no++;else if(v==="N/A")na++;});
   const tot=ok+no;
   const pct=tot>0?Math.round((ok/tot)*100):null;
-  const sClr=pct===null?C.gray:pct>=80?C.grn:pct>=50?C.org:C.err;
+  const sClr=pct===null?GRAY:pct>=80?GRN:pct>=50?ORG:ERR;
+  st(...sClr); doc.setFont("helvetica","bold"); doc.setFontSize(11);
+  doc.text("Conformidade: "+(pct!==null?pct+"%":"—")+"   ("+ok+" Sim  ·  "+no+" Não  ·  "+na+" N/A)",M,y);
+  y+=3;
+  sd(...LGRAY); doc.line(M,y,W-M,y); y+=6;
 
-  sf(C.s2); doc.roundedRect(M,y,CW,18,2,2,"F");
-  sf(sClr); doc.roundedRect(M,y,3,18,0,0,"F");
-  st(C.gray); doc.setFont("helvetica","bold"); doc.setFontSize(7);
-  doc.text("CONFORMIDADE GERAL",M+7,y+6);
-  st(sClr); doc.setFont("helvetica","bold"); doc.setFontSize(22);
-  doc.text(pct!==null?pct+"%":"—",M+7,y+16.5);
-
-  // mini stats
-  const sx=M+65;
-  st(C.grn); doc.setFont("helvetica","normal"); doc.setFontSize(7.5);
-  doc.text(`✓ ${ok} Conforme`,sx,y+8);
-  st(C.err); doc.text(`✗ ${no} Não Conforme`,sx,y+13.5);
-  st(C.gray); doc.text(`– ${na} N/A`,sx+44,y+8);
-  doc.text(`${tot} avaliados`,sx+44,y+13.5);
-
-  // track bar
-  const bx=M+112,bw=CW-(bx-M)-4,by=y+9;
-  sf(C.s1); doc.roundedRect(bx,by,bw,3.5,1,1,"F");
-  if(pct!==null){sf(sClr);doc.roundedRect(bx,by,bw*(pct/100),3.5,1,1,"F");}
-  y+=22;
-
-  // ── CHECKLIST TABLE ──
-  y=secH("Checklist de Verificação",y);
+  // CHECKLIST TABLE
   doc.autoTable({
-    startY:y,
-    head:[["Nº","VERIFICAÇÃO","STATUS"]],
-    body:verificacoes.map((v,i)=>[String(i+1).padStart(2,"0"),v,sm[i]||"—"]),
-    margin:{left:M,right:M},
-    headStyles:{fillColor:[17,17,17],textColor:[55,55,55],fontStyle:"bold",fontSize:7,cellPadding:3},
-    bodyStyles:{fillColor:[10,10,10],textColor:[210,210,210],fontSize:8,cellPadding:{top:3,bottom:3,left:4,right:4}},
-    alternateRowStyles:{fillColor:[13,13,13]},
-    columnStyles:{
-      0:{cellWidth:10,halign:"center",textColor:[45,45,45]},
-      1:{cellWidth:"auto"},
-      2:{cellWidth:22,halign:"center",fontStyle:"bold"},
+    startY: y,
+    head: [["#","Verificação","Status"]],
+    body: verificacoes.map((v,i)=>[i+1, v, sm[i]||"---"]),
+    margin: {left:M, right:M},
+    headStyles: {
+      fillColor: RED,
+      textColor: WHITE,
+      fontStyle: "bold",
+      fontSize: 10,
+      cellPadding: 3,
+    },
+    bodyStyles: {
+      fillColor: WHITE,
+      textColor: BLACK,
+      fontSize: 10,
+      cellPadding: 3,
+    },
+    alternateRowStyles: { fillColor:[245,245,245] },
+    columnStyles: {
+      0: { cellWidth:10, halign:"center" },
+      1: { cellWidth:"auto" },
+      2: { cellWidth:22, halign:"center", fontStyle:"bold" },
     },
     didParseCell(d){
-      if(d.column.index===2&&d.section==="body"){
+      if(d.column.index===2 && d.section==="body"){
         const v=d.cell.raw;
-        if(v==="Sim") d.cell.styles.textColor=[34,197,94];
-        else if(v==="Não") d.cell.styles.textColor=[239,68,68];
-        else if(v==="N/A") d.cell.styles.textColor=[100,100,100];
-        else d.cell.styles.textColor=[40,40,40];
+        if(v==="Sim")      d.cell.styles.textColor=[0,130,60];
+        else if(v==="Não") d.cell.styles.textColor=[180,0,0];
+        else if(v==="N/A") d.cell.styles.textColor=[120,120,120];
       }
     },
-    tableLineColor:[28,28,28],tableLineWidth:0.2,
+    tableLineColor:[200,200,200], tableLineWidth:0.2,
   });
-  y=doc.lastAutoTable.finalY+8;
+  y=doc.lastAutoTable.finalY+10;
 
-  // ── OBSERVAÇÕES ──
-  if(y>H-50){doc.addPage();sf(C.bg);doc.rect(0,0,W,H,"F");y=18;}
-  y=secH("Observações do Fiscal",y);
-  const lines=doc.splitTextToSize(obsText,CW-12);
-  const oH=Math.max(22,lines.length*4.8+10);
-  sf(C.s2); doc.roundedRect(M,y,CW,oH,2,2,"F");
-  sf(C.red); doc.roundedRect(M,y,3,oH,0,0,"F");
-  st(C.silv); doc.setFont("helvetica","normal"); doc.setFontSize(8.5);
-  doc.text(lines,M+7,y+7);
-  y+=oH+8;
+  // OBSERVAÇÕES
+  if(y>H-40){doc.addPage();y=20;}
+  st(...BLACK); doc.setFont("helvetica","bold"); doc.setFontSize(11);
+  doc.text("Observações:",M,y); y+=6;
+  const obsLines=doc.splitTextToSize(obsText,W-M*2);
+  st(...BLACK); doc.setFont("helvetica","normal"); doc.setFontSize(10);
+  doc.text(obsLines,M,y);
+  y+=obsLines.length*5+10;
 
-  // ── FOTOS ──
+  // FOTOS — 2 por linha, grandes (igual ao original)
   if(fotos.length>0){
-    if(y>H-60){doc.addPage();sf(C.bg);doc.rect(0,0,W,H,"F");y=18;}
-    y=secH(`Registro Fotográfico (${fotos.length} foto(s))`,y);
-    const cols=3,gap=4;
-    const fw=(CW-gap*(cols-1))/cols,fh=fw*0.65;
+    if(y>H-75){doc.addPage();y=20;}
+    st(...BLACK); doc.setFont("helvetica","bold"); doc.setFontSize(11);
+    doc.text("Fotos da Instalação:",M,y); y+=6;
+
+    const fw=80, fh=60, gap=10;
+
     for(let i=0;i<fotos.length;i++){
-      const col=i%cols,newRow=col===0&&i>0;
-      if(newRow)y+=fh+gap+8;
-      if(y+fh>H-20){doc.addPage();sf(C.bg);doc.rect(0,0,W,H,"F");y=18;}
-      const fx=M+col*(fw+gap);
-      sf(C.s2);doc.roundedRect(fx-1,y-1,fw+2,fh+2,2,2,"F");
-      try{doc.addImage(fotos[i].data,"JPEG",fx,y,fw,fh,undefined,"FAST");}catch(e){}
-      // foto number
-      sf(C.bg);doc.roundedRect(fx+2,y+2,8,5,1,1,"F");
-      st(C.red);doc.setFont("helvetica","bold");doc.setFontSize(5.5);
-      doc.text(String(i+1).padStart(2,"0"),fx+6,y+5.8,{align:"center"});
-      // geo tag
+      const col=i%2;
+      if(col===0 && i>0) y+=fh+gap+(fotos[i-1].endereco?5:0);
+      if(y+fh>H-15){doc.addPage();y=20;}
+      const fx = col===0 ? M : M+fw+gap;
+      try{ doc.addImage(fotos[i].data,"JPEG",fx,y,fw,fh,undefined,"FAST"); }catch(e){}
       if(fotos[i].endereco){
-        const geo=fotos[i].endereco.substring(0,40)+(fotos[i].endereco.length>40?"…":"");
-        sf([0,30,0]);doc.roundedRect(fx+1,y+fh-8,fw-2,7,1,1,"F");
-        st(C.grn);doc.setFont("helvetica","normal");doc.setFontSize(4.5);
-        doc.text("📍 "+geo,fx+3,y+fh-3.5);
+        const geo=fotos[i].endereco.substring(0,60)+(fotos[i].endereco.length>60?"...":"");
+        st(...GRAY); doc.setFont("helvetica","normal"); doc.setFontSize(6);
+        doc.text("  "+geo, fx, y+fh+4);
       }
     }
-    y+=fh+8;
+    // avança após última linha de fotos
+    const lastCol=(fotos.length-1)%2;
+    y+=fh+(fotos[fotos.length-1].endereco?9:3)+8;
   }
 
-  // ── ASSINATURAS ──
-  if(y>H-55){doc.addPage();sf(C.bg);doc.rect(0,0,W,H,"F");y=18;}
-  y=secH("Validação e Assinaturas",y);
-  const sw=(CW-8)/2;
-  [["Técnico Responsável",tecnico],["Fiscal do Dia",fiscal]].forEach(([l,n],i)=>{
-    const sx=M+i*(sw+8);
-    sf(C.s2);doc.roundedRect(sx,y,sw,28,2,2,"F");
-    sf(C.red);doc.roundedRect(sx,y,3,28,0,0,"F");
-    st([50,50,50]);doc.setFont("helvetica","normal");doc.setFontSize(7);
-    doc.text(n,sx+sw/2,y+8,{align:"center"});
-    sd([30,30,30]);doc.setLineWidth(0.3);
-    doc.line(sx+8,y+21,sx+sw-8,y+21);
-    st(C.gray);doc.setFontSize(7);
-    doc.text(l,sx+sw/2,y+26,{align:"center"});
-  });
+  // ASSINATURAS
+  if(y>H-45){doc.addPage();y=20;}
+  sd(...LGRAY); doc.setLineWidth(0.3); doc.line(M,y,W-M,y); y+=12;
+  const sw=(W-M*2-10)/2;
+  doc.line(M, y, M+sw, y);
+  doc.line(M+sw+10, y, M+sw*2+10, y);
+  y+=5;
+  st(...BLACK); doc.setFont("helvetica","normal"); doc.setFontSize(10);
+  doc.text(tecnico, M+sw/2,      y, {align:"center"});
+  doc.text(fiscal,  M+sw+10+sw/2,y, {align:"center"});
+  y+=4;
+  st(...GRAY); doc.setFontSize(8);
+  doc.text("Técnico Responsável", M+sw/2,       y, {align:"center"});
+  doc.text("Fiscal do Dia",       M+sw+10+sw/2, y, {align:"center"});
 
-  // ── RODAPÉ ──
+  // RODAPÉ
   const pages=doc.internal.getNumberOfPages();
   for(let pg=1;pg<=pages;pg++){
     doc.setPage(pg);
-    sf(C.s1);doc.rect(0,H-11,W,11,"F");
-    sf(C.red);doc.rect(0,H-11,W,0.4,"F");
-    st(C.gray);doc.setFont("helvetica","normal");doc.setFontSize(6.5);
-    doc.text("Fibra PRO  ·  Ficha Fiscal Técnica  ·  Gerado digitalmente",M,H-5);
-    doc.text(`Página ${pg} de ${pages}`,W-M,H-5,{align:"right"});
+    sd(...LGRAY); doc.setLineWidth(0.2); doc.line(M,H-12,W-M,H-12);
+    st(...GRAY); doc.setFont("helvetica","normal"); doc.setFontSize(7);
+    doc.text("Fibra PRO  ·  Ficha Fiscal Técnica  ·  Gerado digitalmente em "+new Date().toLocaleString("pt-BR"),M,H-7);
+    doc.text("Página "+pg+" de "+pages, W-M, H-7, {align:"right"});
   }
 
   btn.style.opacity="1";
   btn.innerHTML='<i class="fa-solid fa-file-export"></i> Gerar &amp; Compartilhar PDF';
-
   await compartilharPDF(doc);
   toast("PDF gerado com sucesso!");
 }
